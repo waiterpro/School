@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#34b7af">
+  <meta name="description" content="Шкільний розклад уроків — актуальна інформація з Google Таблиць.">
+  <title>Розклад занять • Школа</title>
+  <style>
+    :root {
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
+      color: #132846;
+      background: #34b7af;
+      --blue: #315cdb;
+      --ink: #132846;
+      --mute: #65758d;
+      --border: #e5ebf5;
+      --teal: #34b7af;
+      --teal-light: #c9f1e9;
+      --teal-dark: #168f88;
+      --shadow-soft: 0 8px 24px rgba(19, 70, 78, 0.07);
+      --shadow-hover: 0 15px 32px rgba(19, 70, 78, 0.13);
+      --radius-card: 22px;
+      --radius-sm: 15px;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+
+    button, select, input { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, select:focus-visible, input:focus-visible, a:focus-visible {
+      outline: 3px solid #93b4ff;
+      outline-offset: 3px;
+    }
+
+    .shell { max-width: 1170px; margin: auto; padding: 0 22px; }
+
+    /* ---------- header ---------- */
+    header {
+      background: #34b7af;
+      color: white;
+      padding: 20px 0;
+      transition: background 0.3s;
+    }
+    header .shell { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+    .brand { display: flex; align-items: center; gap: 13px; }
+    .logo {
+      width: 66px; height: 66px;
+      border-radius: 50%;
+      background: #ffffff;
+      display: grid; place-items: center;
+      overflow: hidden; flex: none;
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+      box-shadow: 0 0 0 0 rgba(255,255,255,0.4);
+    }
+    .logo:hover {
+      transform: scale(1.04) rotate(2deg);
+      box-shadow: 0 0 0 8px rgba(255,255,255,0.12);
+    }
+    .logo img { width: 100%; height: 100%; object-fit: contain; padding: 5px; }
+    h1 { font-size: 21px; margin: 0; letter-spacing: -0.4px; }
+    .brand p { margin: 2px 0 0; color: #becdea; font-size: 13px; }
+    .headlink {
+      color: #e0eaff;
+      text-decoration: none;
+      border: 1px solid #516383;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      transition: background 0.2s, border-color 0.2s, transform 0.15s;
+    }
+    .headlink:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: #8aa4d0;
+      transform: translateY(-1px);
+    }
+
+    /* ---------- hero ---------- */
+    .hero { padding: 38px 0 22px; }
+    .eyebrow {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+      color: #5571c9;
+    }
+    .hero h2 {
+      font-size: clamp(27px, 4vw, 43px);
+      letter-spacing: -1.5px;
+      margin: 9px 0;
+      background: linear-gradient(135deg, #132846 30%, #168f88 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      color: var(--mute);
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    /* ---------- toolbar ---------- */
+    .toolbar {
+      margin-top: 22px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      box-shadow: 0 13px 38px #1f438010;
+      padding: 20px;
+      display: flex;
+      gap: 16px;
+      align-items: end;
+      flex-wrap: wrap;
+      transition: box-shadow 0.3s;
+    }
+    .toolbar:hover { box-shadow: 0 15px 42px #1f438018; }
+    .field { display: flex; flex-direction: column; gap: 8px; min-width: 210px; flex: 1; }
+    .field label { font-size: 12px; font-weight: 750; color: #5b6c85; }
+    .field select, .field input {
+      width: 100%; height: 46px;
+      background: #f7f9fe;
+      border: 1px solid #dce5f2;
+      border-radius: 12px;
+      padding: 0 14px;
+      color: #172e50;
+      min-width: 0;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+    .field select:focus, .field input:focus {
+      border-color: var(--teal);
+      background: #fff;
+      box-shadow: 0 0 0 4px rgba(52,183,175,0.1);
+    }
+    .update {
+      height: 46px;
+      border: 0;
+      background: #eaf0ff;
+      color: #2352cf;
+      font-weight: 800;
+      border-radius: 12px;
+      padding: 0 18px;
+      transition: transform 0.2s ease, background 0.2s, box-shadow 0.2s;
+    }
+    .update:hover {
+      background: #dce6ff;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 14px rgba(49,92,219,0.15);
+    }
+    .update:active { transform: translateY(0) scale(0.98); }
+    .update:disabled { opacity: 0.6; transform: none; cursor: not-allowed; }
+
+    /* ---------- status ---------- */
+    .status {
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--mute);
+      font-size: 13px;
+    }
+    .dot { height: 9px; width: 9px; background: #19a884; border-radius: 50%; flex: none; transition: background 0.3s; }
+    .dot.warn { background: #e9a63a; }
+    .dot.bad { background: #e06565; }
+    .status .right { margin-left: auto; }
+
+    /* ---------- tabs ---------- */
+    .tabs { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 15px 0 20px; }
+    .tab {
+      border: 1px solid #e0e8f5;
+      border-radius: 12px;
+      background: #fff;
+      color: #5a6c87;
+      padding: 11px 16px;
+      font-weight: 750;
+      transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s;
+    }
+    .tab:hover {
+      transform: translateY(-2px);
+      border-color: #9bded5;
+      color: var(--teal-dark);
+      box-shadow: 0 4px 12px rgba(52,183,175,0.12);
+    }
+    .tab.active {
+      background: linear-gradient(135deg, #28aaa3, #43c4b6);
+      border-color: #34b7af;
+      color: white;
+      box-shadow: 0 7px 17px rgba(25,157,149,0.3);
+      transform: translateY(-1px);
+    }
+
+    /* ---------- overview stats ---------- */
+    .overview { display: flex; gap: 13px; flex-wrap: wrap; margin-bottom: 17px; }
+    .stat {
+      background: white;
+      border: 1px solid rgba(52,183,175,0.17);
+      padding: 15px 18px;
+      border-radius: 18px;
+      min-width: 130px;
+      flex: 1;
+      box-shadow: 0 6px 18px rgba(19,70,78,0.045);
+      transition: transform 0.22s ease, box-shadow 0.22s ease;
+    }
+    .stat:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 22px rgba(19,70,78,0.09);
+    }
+    .stat strong { font-size: 20px; display: block; transition: color 0.2s; }
+    .stat:hover strong { color: var(--teal-dark); }
+    .stat span { color: var(--mute); font-size: 12px; }
+
+    /* ---------- content ---------- */
+    .content { padding-bottom: 60px; }
+    .daily { display: grid; gap: 11px; }
+
+    /* ---------- lesson card refined ---------- */
+    .lesson {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(115deg, #fff 0%, #fbffff 100%);
+      border: 1px solid rgba(52,183,175,0.18);
+      border-radius: var(--radius-card);
+      padding: 19px 22px;
+      display: grid;
+      grid-template-columns: 56px minmax(170px, 1fr) auto;
+      align-items: center;
+      gap: 15px;
+      box-shadow: var(--shadow-soft);
+      transition: transform 0.28s cubic-bezier(0.2, 0.75, 0.25, 1), box-shadow 0.28s ease, border-color 0.28s ease;
+      animation: card-in 0.48s both;
+    }
+    .lesson::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 5px;
+      background: linear-gradient(180deg, #34b7af, #78d8c8);
+      border-radius: 0 5px 5px 0;
+      transition: width 0.25s;
+    }
+    .lesson:hover {
+      transform: translateY(-4px);
+      border-color: rgba(52,183,175,0.48);
+      box-shadow: var(--shadow-hover);
+    }
+    .lesson:hover::before { width: 7px; }
+    .num {
+      width: 46px; height: 46px;
+      border-radius: var(--radius-sm);
+      color: var(--teal-dark);
+      background: linear-gradient(145deg, #e2faf5, #c9f1e9);
+      box-shadow: inset 0 1px 0 #fff;
+      display: grid; place-items: center;
+      font-weight: 850; font-size: 17px;
+      transition: transform 0.25s, box-shadow 0.25s;
+    }
+    .lesson:hover .num {
+      transform: scale(1.05);
+      box-shadow: inset 0 1px 0 #fff, 0 4px 12px rgba(52,183,175,0.2);
+    }
+    .subject {
+      font-size: 17px;
+      font-weight: 770;
+      color: #173b48;
+      letter-spacing: -0.2px;
+      overflow-wrap: anywhere;
+      transition: color 0.2s;
+    }
+    .lesson:hover .subject { color: #0f2e38; }
+    .times {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 7px;
+      color: #728895;
+      font-size: 13px;
+      transition: color 0.2s;
+    }
+    .times::before {
+      content: "◷";
+      font-size: 14px;
+      color: #34aaa2;
+      transition: transform 0.2s;
+    }
+    .lesson:hover .times::before { transform: rotate(15deg); }
+    .lesson .tag {
+      background: #e6f8f4;
+      color: #168f80;
+      border: 1px solid #d1f0e8;
+      border-radius: 30px;
+      padding: 7px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      transition: background 0.2s, transform 0.2s;
+      white-space: nowrap;
+    }
+    .lesson:hover .tag {
+      background: #d4f2ea;
+      transform: scale(1.03);
+    }
+
+    /* ---------- weekly grid ---------- */
+    .weekly { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+    .daycard {
+      background: #fff;
+      border: 1px solid rgba(52,183,175,0.18);
+      border-radius: 21px;
+      padding: 15px;
+      min-width: 0;
+      box-shadow: 0 8px 24px rgba(19,70,78,0.06);
+      transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+      animation: card-in 0.48s both;
+    }
+    .daycard:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 14px 28px rgba(19,70,78,0.11);
+    }
+    .daycard.today {
+      border: 1px solid #34b7af;
+      box-shadow: 0 0 0 3px rgba(52,183,175,0.13), 0 10px 25px rgba(19,70,78,0.08);
+      animation: pulse-today 3s infinite ease-in-out;
+    }
+    @keyframes pulse-today {
+      0%, 100% { box-shadow: 0 0 0 3px rgba(52,183,175,0.13), 0 10px 25px rgba(19,70,78,0.08); }
+      50% { box-shadow: 0 0 0 6px rgba(52,183,175,0.07), 0 12px 30px rgba(19,70,78,0.1); }
+    }
+    .daycard h3 { font-size: 15px; margin: 2px 0 14px; color: var(--teal-dark); transition: letter-spacing 0.2s; }
+    .daycard:hover h3 { letter-spacing: 0.3px; }
+    .daycard .mini { border-top: 1px solid #e5f3f0; padding: 10px 0; transition: background 0.2s; }
+    .daycard .mini:hover { background: #f7fffd; }
+    .daycard .mini span { font-size: 11px; color: #7b8ba2; display: block; margin-bottom: 5px; }
+    .daycard .mini strong { font-size: 13px; overflow-wrap: anywhere; color: #244653; }
+    .daycard .count { font-size: 11px; color: #6f7d96; margin-top: 5px; }
+
+    /* ---------- empty state ---------- */
+    .empty {
+      background: white;
+      border: 1px dashed #cbd7ed;
+      border-radius: 21px;
+      text-align: center;
+      padding: 38px 24px;
+      color: var(--mute);
+      box-shadow: 0 8px 24px rgba(19,70,78,0.05);
+      animation: card-in 0.48s both;
+    }
+    .empty strong {
+      display: block;
+      color: #253e66;
+      margin-bottom: 8px;
+      font-size: 18px;
+    }
+
+    /* ---------- extra ---------- */
+    .extra {
+      margin-top: 14px;
+      padding: 16px 20px;
+      border-radius: 16px;
+      background: #eaf5ff;
+      color: #2a5685;
+      font-size: 14px;
+      border-left: 4px solid #6aa9ff;
+      animation: card-in 0.48s both;
+      transition: background 0.2s;
+    }
+    .extra:hover { background: #e0efff; }
+
+    /* ---------- note ---------- */
+    .note {
+      font-size: 12px;
+      line-height: 1.5;
+      color: #7a8a9e;
+      margin-top: 25px;
+    }
+
+    /* ---------- utilities ---------- */
+    .hidden { display: none !important; }
+
+    /* ---------- setup (collapsible) ---------- */
+    .setup {
+      margin: 12px 0;
+      background: white;
+      border: 1px solid #e5ebf5;
+      border-radius: 15px;
+      padding: 16px;
+      transition: box-shadow 0.2s;
+    }
+    .setup:hover { box-shadow: 0 4px 16px rgba(19,70,78,0.06); }
+    .setup summary { cursor: pointer; font-weight: 700; transition: color 0.2s; }
+    .setup summary:hover { color: var(--teal-dark); }
+    .setup input {
+      width: 100%; margin: 10px 0; padding: 12px;
+      border: 1px solid #dce5f2; border-radius: 10px;
+      transition: border-color 0.2s;
+    }
+    .setup input:focus { border-color: var(--teal); outline: none; }
+    .setup p { font-size: 12px; color: #65758d; }
+
+    /* ---------- keyframes ---------- */
+    @keyframes card-in {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fade-slide {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .lesson:nth-child(1) { animation-delay: 0.02s; }
+    .lesson:nth-child(2) { animation-delay: 0.06s; }
+    .lesson:nth-child(3) { animation-delay: 0.10s; }
+    .lesson:nth-child(4) { animation-delay: 0.14s; }
+    .lesson:nth-child(5) { animation-delay: 0.18s; }
+    .lesson:nth-child(6) { animation-delay: 0.22s; }
+    .lesson:nth-child(7) { animation-delay: 0.26s; }
+    .lesson:nth-child(8) { animation-delay: 0.30s; }
+
+    .daycard:nth-child(1) { animation-delay: 0.04s; }
+    .daycard:nth-child(2) { animation-delay: 0.10s; }
+    .daycard:nth-child(3) { animation-delay: 0.16s; }
+    .daycard:nth-child(4) { animation-delay: 0.22s; }
+    .daycard:nth-child(5) { animation-delay: 0.28s; }
+
+    /* ---------- responsive ---------- */
+    @media (max-width: 900px) {
+      .weekly { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 540px) {
+      .shell { padding: 0 14px; }
+      header { padding: 15px 0; }
+      .headlink { display: none; }
+      .hero { padding-top: 28px; }
+      .toolbar { padding: 15px; }
+      .field { flex: 1 1 100%; }
+      .update { width: 100%; }
+      .status { flex-wrap: wrap; }
+      .status .right { margin-left: 0; width: 100%; }
+      .tab { padding: 10px 12px; font-size: 12px; }
+      .lesson { grid-template-columns: 43px 1fr; gap: 11px; padding: 15px 16px; border-radius: 18px; }
+      .lesson .tag { display: none; }
+      .num { width: 41px; height: 41px; border-radius: 13px; }
+      .weekly { grid-template-columns: 1fr; }
+      .daycard { padding: 16px; }
+      .daycard .mini { display: flex; gap: 12px; align-items: baseline; }
+      .daycard .mini span { flex: none; width: 60px; }
+      .lesson:hover { transform: translateY(-2px); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="shell">
+      <div class="brand">
+        <div class="logo">
+          <img src="data:image/jpeg;base64,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" alt="Логотип школи">
+        </div>
+        <div>
+          <h1>Gravitation School</h1>
+          <p>Усі уроки в одному місці</p>
+        </div>
+      </div>
+      <a class="headlink" href="https://docs.google.com/spreadsheets/d/1hANIlno8mchmA2L6P0F-i-BQv6lORFeBuXAYMWv-e5w/edit" target="_blank" rel="noopener">Відкрити Google Таблицю ↗</a>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="hero">
+      <div class="eyebrow">Навчальний тиждень</div>
+      <h2>Розклад занять</h2>
+      <p>Оберіть свій клас і перегляньте уроки на сьогодні або на весь тиждень.</p>
+      <div class="toolbar">
+        <div class="field">
+          <label for="classSelect">Клас</label>
+          <select id="classSelect"><option value="">Завантаження класів…</option></select>
+        </div>
+        <div class="field" style="flex:0 1 230px">
+          <label for="filter">Пошук предмета</label>
+          <input id="filter" placeholder="Наприклад, математика" type="search">
+        </div>
+        <button class="update" id="refresh" type="button">↻ Оновити</button>
+      </div>
+    </section>
+
+    <div class="status" role="status" aria-live="polite">
+      <span id="stateDot" class="dot warn"></span>
+      <span id="statusText">Завантажуємо розклад…</span>
+      <span class="right" id="updatedAt"></span>
+    </div>
+
+    <div class="tabs" id="tabs" aria-label="Оберіть день">
+      <button class="tab" data-day="0">Пн</button>
+      <button class="tab" data-day="1">Вт</button>
+      <button class="tab" data-day="2">Ср</button>
+      <button class="tab" data-day="3">Чт</button>
+      <button class="tab" data-day="4">Пт</button>
+      <button class="tab" data-day="week">Увесь тиждень</button>
+    </div>
+
+    <section class="content">
+      <div class="overview" id="overview"></div>
+      <div id="schedule"></div>
+      <p class="note">Дані завантажуються напряму з Google без Apps Script. Горизонтальні об’єднання відновлюються лише за погодженими правилами назв. Оновлення щогодини, при відкритті та вручну.</p>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      'use strict';
+      const SHEET_ID = '1hANIlno8mchmA2L6P0F-i-BQv6lORFeBuXAYMWv-e5w';
+      const SHEET_GID = '1071552903';
+      const CACHE_KEY = 'school-live-rule-based-v17-' + SHEET_ID;
+      const DAYS = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', 'П’ятниця'];
+      const $ = id => document.getElementById(id);
+      const todayIndex = () => ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].indexOf(new Intl.DateTimeFormat('en-GB', { weekday: 'short', timeZone: 'Europe/Kyiv' }).format(new Date()));
+      let state = { classes: [], days: {}, selected: '', day: todayIndex() < 0 ? 'week' : todayIndex(), updated: 0, source: '', filter: '' };
+
+      function normalize(value) { return String(value ?? '').replace(/\s+/g, ' ').trim(); }
+      function dayIndex(s) {
+        let t = normalize(s).toUpperCase().replace(/[’'`]/g, '');
+        if (t.startsWith('ПОНЕД')) return 0;
+        if (t.startsWith('ВІВТ') || t.startsWith('ВТОР')) return 1;
+        if (t.startsWith('СЕРЕД')) return 2;
+        if (t.startsWith('ЧЕТВ')) return 3;
+        if (t.startsWith('ПЯТ')) return 4;
+        return -1;
+      }
+
+      const C = { D:3, E:4, F:5, G:6, H:7, I:8, L:11, M:12, N:13, O:14, Q:16, R:17, S:18, T:19, U:20, V:21, W:22, X:23 };
+
+      function nameKey(v) {
+        return normalize(v).toLocaleLowerCase('uk').replace(/[’'`]/g, '')
+          .replace(/\s*\/\s*/g, '/').replace(/[()]/g, ' ').replace(/\s+/g, ' ').trim();
+      }
+      const has = (v, re) => re.test(nameKey(v));
+
+      function ruleMerges(raw) {
+        const rows = raw.map(r => r.slice()), merges = [];
+        function group(row, from, to, match) {
+          const candidates = [];
+          for (let col = from; col <= to; col++) {
+            let val = raw[row]?.[col] || '';
+            if (val && match(val, col)) candidates.push({ col, val });
+          }
+          if (candidates.length !== 1) return;
+          const { col: anchor, val } = candidates[0];
+          for (let c = from; c <= to; c++) if (c !== anchor && normalize(raw[row]?.[c])) return;
+          let filled = false;
+          for (let c = from; c <= to; c++) if (!normalize(rows[row]?.[c])) { rows[row][c] = val; filled = true; }
+          if (filled) merges.push([row, from, row, to]);
+        }
+        const re = {
+          chemAlg: /х[іи]м(?:[іи]я)?\s*\/\s*алгебр/,
+          bioGeo: /б[іи]ол(?:ог[іи]я)?\s*\/\s*геометр/,
+          verBusiness: /верон[іи]к[а-я]*\s+б[іи]знес/,
+          business8: /б[іи]знес\s*8\s*клас/,
+          itBarbara: /(?=.*верон[іи]к)(?=.*(?:\bit\b|\bіт\b|\b[іи]т\b))(?=.*барбар)(?=.*мед)/,
+          business7: /б[іи]знес\s*7\s*(?:кл|клас)/,
+          chemMath: /х[іи]м(?:[іи]я)?\s*\/\s*матем/,
+          bioMath: /б[іи]ол(?:ог[іи]я)?\s*\/\s*матем/,
+          barbaraBusiness: /(?=.*барбар)(?=.*мед)(?=.*верон[іи]к)(?=.*б[іи]знес)/,
+          businessITScience: /(?=.*б[іи]знес)(?=.*(?:\bit\b|\bіт\b|\b[іи]т\b))(?=.*science)(?=.*люба)/,
+          verIT: /(?=.*верон[іи]к)(?=.*(?:\bit\b|\bіт\b|\b[іи]т\b))/,
+          businessRobotScience: /(?=.*б[іи]знес)(?=.*робот)(?=.*science)(?=.*оксан)/,
+          theatreProtect: /театр|зах[иі]ст/
+        };
+        for (let r = 0; r < raw.length; r++) {
+          if (r + 1 >= 56 && r + 1 <= 88) continue;
+          if (raw[r].some(v => /гпд/i.test(normalize(v)))) continue;
+          group(r, C.L, C.O, v => nameKey(v).includes('/'));
+          group(r, C.Q, C.T, v => has(v, re.itBarbara) || has(v, re.business7));
+          group(r, C.Q, C.R, v => has(v, re.chemAlg) || has(v, re.bioGeo) || has(v, re.verBusiness));
+          group(r, C.S, C.T, v => has(v, re.chemAlg) || has(v, re.bioGeo) || has(v, re.business8));
+          group(r, C.U, C.W, v => has(v, re.barbaraBusiness) || has(v, re.businessITScience) || has(v, re.verIT) || has(v, re.businessRobotScience));
+          group(r, C.U, C.V, v => has(v, re.chemMath) || has(v, re.bioMath));
+          group(r, C.W, C.X, v => has(v, re.theatreProtect));
+        }
+        return { rows, merges };
+      }
+
+      const HIDDEN_COLUMNS = new Set([9, 10, 15, ...Array.from({ length: 80 }, (_, i) => i + 24)]);
+      const HIDDEN_FIRST_ROW = 56, HIDDEN_LAST_ROW = 88;
+
+      function isExcludedRow(rowIndex, row) {
+        return (rowIndex + 1 >= HIDDEN_FIRST_ROW && rowIndex + 1 <= HIDDEN_LAST_ROW) ||
+               row.some(cell => /гпд/i.test(normalize(cell)));
+      }
+
+      function parse(matrix) {
+        if (!Array.isArray(matrix) || !matrix.length) throw Error('Таблиця порожня');
+        const raw = matrix.map(r => Array.isArray(r) ? r.map(normalize) : []);
+        const rows = ruleMerges(raw).rows;
+        const skippedRows = new Set(rows.map((r, i) => isExcludedRow(i, r) ? i : -1).filter(i => i >= 0));
+        const maxCols = Math.max(...rows.map(r => r.length), 0);
+        const classLike = s => /^(?:[1-9]|10|11)\s*[-–]?[\sА-ЯІЇЄҐA-Zа-яіїєґa-z]*(?:\s|$)/u.test(s) && !/^(?:[1-9]|10|11)\s*[:.]/.test(s) && s.length < 75;
+        let best = { score: 0, row: -1, classes: [] };
+        for (let ri = 0; ri < Math.min(rows.length, 35); ri++) {
+          if (skippedRows.has(ri)) continue;
+          const found = [];
+          for (let col = 0; col < rows[ri].length; col++) {
+            if (HIDDEN_COLUMNS.has(col)) continue;
+            const name = rows[ri][col];
+            if (!name || /додаткові|примітк|номер|урок|годин|час|перерва/i.test(name)) continue;
+            if (classLike(name) && !/^[0-9]{1,2}\s*[-–]\s*[0-9]{1,2}$/.test(name)) found.push({ col, name, id: String(col) });
+          }
+          if (found.length > best.score) best = { score: found.length, row: ri, classes: found };
+        }
+        const classes = best.classes;
+        if (!classes.length) throw Error('Не знайдено заголовків класів');
+        const timeRe = /\b\d{1,2}\s*[:.]\s*\d{2}\b/;
+        const numberRe = /^(?:№\s*)?(\d{1,2})(?:\s*[.№)]|\s*$)/i;
+        const days = { 0: [], 1: [], 2: [], 3: [], 4: [] }, extras = {};
+        let current = -1, foundDays = new Set(), lastLesson = 0;
+        const firstClassCol = Math.min(...classes.map(c => c.col));
+        const prefixLen = Math.max(3, firstClassCol);
+        for (let ri = 0; ri < rows.length; ri++) {
+          if (skippedRows.has(ri)) continue;
+          const row = rows[ri];
+          const prefix = row.slice(0, prefixLen);
+          let detected = -1;
+          for (const cell of prefix) { if (cell.length < 45 && (detected = dayIndex(cell)) >= 0) break; }
+          if (detected >= 0) { current = detected; foundDays.add(current); lastLesson = 0; }
+          if (current < 0 || ri === best.row) continue;
+          let num = null;
+          for (const item of prefix) { const m = item.match(numberRe); if (m) { const x = Number(m[1]); if (x >= 1 && x <= 12) { num = x; break; } } }
+          let time = prefix.find(x => timeRe.test(x)) || '';
+          const subjects = {};
+          let populated = 0;
+          for (const cls of classes) { const v = row[cls.col] || ''; subjects[cls.id] = v; if (v) populated++; }
+          if (!num && !time) continue;
+          if (!num && time) { num = lastLesson + 1; }
+          if (num < 1 || num > 12) continue;
+          if (!populated && !time) continue;
+          if (days[current].some(x => x.num === num)) {
+            const old = days[current].find(x => x.num === num);
+            if (time && (!old.time || old.time === '—')) old.time = time;
+            for (const cls of classes) {
+              const v = subjects[cls.id];
+              if (v && !old.subjects[cls.id]) old.subjects[cls.id] = v;
+            }
+          } else {
+            days[current].push({ num, time: time || '—', subjects });
+          }
+          lastLesson = num;
+        }
+        for (const entries of Object.values(days)) entries.sort((a, b) => a.num - b.num);
+        const count = Object.values(days).reduce((n, v) => n + v.length, 0);
+        if (!count) throw Error('Не вдалося визначити уроки. Класів: ' + classes.length + ', днів: ' + foundDays.size);
+        return { classes, days, extras };
+      }
+
+      function setStatus(msg, kind = 'warn') {
+        $('statusText').textContent = msg;
+        $('stateDot').className = 'dot ' + (kind === 'ok' ? '' : kind);
+      }
+      function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c])); }
+
+      function selectClass() {
+        const el = $('classSelect');
+        el.innerHTML = '';
+        for (const cl of state.classes) {
+          const o = document.createElement('option');
+          o.value = cl.id;
+          o.textContent = cl.name;
+          el.append(o);
+        }
+        let stored = '';
+        try { stored = localStorage.getItem('school-last-class') || ''; } catch {}
+        state.selected = state.classes.some(c => c.id === state.selected) ? state.selected :
+                         state.classes.some(c => c.id === stored) ? stored :
+                         state.classes[0]?.id || '';
+        el.value = state.selected;
+      }
+
+      function visibleLessons(day) {
+        const lessons = (state.days[day] || []).map(l => ({ ...l, subject: l.subjects[state.selected] || '' })).filter(l => l.subject.trim());
+        const query = state.filter.toLowerCase();
+        return query ? lessons.filter(l => l.subject.toLowerCase().includes(query)) : lessons;
+      }
+
+      function render() {
+        if (!state.classes.length) {
+          $('overview').innerHTML = '';
+          $('schedule').innerHTML = '<div class="empty"><strong>Розклад ще не завантажено</strong>Перевірте доступ до Google Таблиці й натисніть «Оновити».</div>';
+          return;
+        }
+        document.querySelectorAll('[data-day]').forEach(b => {
+          let active = String(state.day) === b.dataset.day;
+          b.classList.toggle('active', active);
+          b.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+        let total = [0, 1, 2, 3, 4].reduce((a, i) => a + visibleLessons(i).length, 0);
+        let today = typeof state.day === 'number' ? state.day : todayIndex();
+        let selected = state.classes.find(c => c.id === state.selected);
+        $('overview').innerHTML =
+          '<div class="stat"><strong>' + esc(selected?.name || '—') + '</strong><span>Обраний клас</span></div>' +
+          '<div class="stat"><strong>' + total + '</strong><span>Уроків за тиждень' + (state.filter ? ' за пошуком' : '') + '</span></div>' +
+          '<div class="stat"><strong>' + (today <= 4 ? visibleLessons(today).length : '—') + '</strong><span>Уроків за обраний день</span></div>';
+
+        const root = $('schedule');
+        if (state.day === 'week') {
+          root.className = 'weekly';
+          root.innerHTML = DAYS.map((d, i) => {
+            const ls = visibleLessons(i), now = todayIndex() === i;
+            return '<article class="daycard' + (now ? ' today' : '') + '"><h3>' + esc(d) + '</h3>' +
+              (ls.length ? ls.map(l => '<div class="mini"><span>' + l.num + ' урок · ' + esc(l.time) + '</span><strong>' + esc(l.subject || 'Назву не отримано') + '</strong></div>').join('') : '<p class="count">Немає уроків</p>') +
+              '<div class="count">' + ls.length + ' уроків</div></article>';
+          }).join('');
+          return;
+        }
+
+        root.className = 'daily';
+        let ls = visibleLessons(state.day);
+        root.innerHTML = ls.length ?
+          ls.map(l => '<article class="lesson"><div class="num">' + l.num + '</div><div><div class="subject">' + esc(l.subject || 'Назву не отримано (можливо, об’єднана клітинка)') + '</div><div class="times">' + esc(l.time) + '</div></div><span class="tag">Урок ' + l.num + '</span></article>').join('') :
+          '<div class="empty"><strong>Уроків не знайдено</strong>Спробуйте вибрати інший день чи прибрати пошуковий запит.</div>';
+
+        let extra = state.extras?.[state.day]?.[state.selected];
+        if (extra && !state.filter) root.innerHTML += '<aside class="extra"><strong>Після уроків:</strong> ' + esc(extra) + '</aside>';
+      }
+
+      function apply(data, source, updated) {
+        state = { ...state, ...data, source, updated };
+        selectClass();
+        $('updatedAt').textContent = updated ? 'Оновлено: ' + new Date(updated).toLocaleString('uk-UA') : '';
+        render();
+      }
+
+      function readCache() {
+        try {
+          let data = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+          if (data?.classes?.length) {
+            apply(data, 'cache', data.updated);
+            setStatus('Збережений розклад. Перевіряємо актуальні дані…', 'warn');
+          }
+        } catch {}
+      }
+
+      let lastTry = 0, req = 0;
+      function load() {
+        lastTry = Date.now();
+        const request = ++req;
+        setStatus('Завантажуємо актуальний розклад із Google…');
+        $('refresh').disabled = true;
+        const callback = 'scheduleGViz' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+        const tag = document.createElement('script');
+        let timer, done = false;
+        const finish = () => {
+          if (done) return false;
+          done = true;
+          clearTimeout(timer);
+          tag.remove();
+          delete window[callback];
+          $('refresh').disabled = false;
+          return true;
+        };
+        window[callback] = v => {
+          if (!finish() || request !== req) return;
+          try {
+            if (!v || v.status !== 'ok' || !v.table || !Array.isArray(v.table.rows)) throw Error(v?.errors?.[0]?.detailed_message || 'Google не повернув таблицю');
+            const cols = v.table.cols?.length || 0;
+            const rows = v.table.rows.map(r => Array.from({ length: cols }, (_, i) => {
+              const cell = r.c?.[i];
+              return normalize(cell?.f ?? cell?.v ?? '');
+            }));
+            const data = parse(rows), updated = Date.now();
+            apply(data, 'live', updated);
+            try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ...data, updated })); } catch {}
+            setStatus('Розклад оновлено з Google Таблиці · кожні 60 хв', 'ok');
+          } catch (e) {
+            setStatus('Помилка читання: ' + e.message, 'bad');
+          }
+        };
+        tag.onerror = () => {
+          if (finish()) setStatus('Не вдалося прочитати Google Таблицю. Перевірте відкритий доступ за посиланням.', 'bad');
+        };
+        timer = setTimeout(() => {
+          if (finish()) setStatus('Google не відповідає. Залишився останній збережений розклад.', 'bad');
+        }, 18000);
+        const tqx = 'out:json;responseHandler:' + callback;
+        tag.src = 'https://docs.google.com/spreadsheets/d/' + encodeURIComponent(SHEET_ID) +
+                  '/gviz/tq?gid=' + encodeURIComponent(SHEET_GID) + '&headers=0&tqx=' + encodeURIComponent(tqx) + '&t=' + Date.now();
+        document.head.append(tag);
+      }
+
+      $('classSelect').addEventListener('change', e => {
+        state.selected = e.target.value;
+        localStorage.setItem('school-last-class', state.selected);
+        render();
+      });
+      $('filter').addEventListener('input', e => {
+        state.filter = e.target.value.trim();
+        render();
+      });
+      $('refresh').onclick = load;
+      $('tabs').addEventListener('click', e => {
+        let b = e.target.closest('[data-day]');
+        if (!b) return;
+        state.day = b.dataset.day === 'week' ? 'week' : Number(b.dataset.day);
+        render();
+      });
+
+      readCache();
+      load();
+      setInterval(() => { if (!document.hidden) load(); }, 3600000);
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && Date.now() - lastTry >= 3600000) load();
+      });
+    })();
+  </script>
+</body>
+</html>
